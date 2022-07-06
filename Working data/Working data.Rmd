@@ -1,0 +1,341 @@
+---
+title: "5205 working data"
+author: "Group 8"
+output: html_document
+---
+
+```{r}
+library(readxl)
+```
+
+```{r}
+setwd("/Users/lulu/Desktop/APAN 5205")
+unemployment = read.csv(file = 'unemployment_data_us.csv')
+unemployment
+addtionaldata = read_excel('covid addtional data.xlsx')
+addtionaldata
+```
+
+```{r}
+str(unemployment)
+str(addtionaldata)
+```
+
+```{r}
+ad = addtionaldata[-c(1,2,3,4,5,6,9,14,15),]
+ad
+adn = as.data.frame(t(ad))
+adn
+unemployment
+```
+
+```{r}
+colnames(adn) = c('Men','Women','White','Black','Asian','Hispanic','Primary_School','High_School','Associates_Degree','Professional_Degree')
+adf = adn[-1,]
+adf$Year = c(2020,2020,2020,2020,2020,2020,2020,2020,2020,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021)
+adf$Month = c('Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec')
+adf
+```
+```{r}
+unemployment = unemployment[-4]
+unemployment
+```
+
+```{r}
+finald = rbind(unemployment,adf)
+rownames(finald)=1:nrow(finald)
+finald
+```
+```{r}
+finald <- finald %>%
+  mutate(Month = factor(Month, levels =month.abb))
+
+finald$Month
+```
+
+
+
+```{r}
+#finald[order(finald$Month,finald$Year)]
+finald = with(finald,finald[order(Month,Year),])
+finald
+```
+
+```{r}
+finald = na.omit(finald) 
+```
+
+```{r}
+rownames(finald)=1:nrow(finald)
+finald
+```
+
+
+```{r}
+
+write.csv(finald,"final_data.csv", row.names = FALSE)
+
+```
+
+Unemployment by state from bls api
+```{r}
+library(blsR)
+library(dplyr)
+unemp_states = get_n_series_table(series_ids = list('LASST060000000000003','LASST120000000000003','LASST480000000000003','LASST360000000000003'), api_key = 'fec44a8f711241b5999aa763c87fb4a0',start_year = 2010, end_year = 2021)
+
+unemp_states=data.frame(unemp_states)
+unemp_states
+
+write.csv(unemp_states,"/Users/oooliviaaa/Desktop/unemp.csv", row.names = FALSE)
+```
+
+Covid case data from GitHub
+```{r}
+data <- read.csv('final_unemp.csv')
+covid <-read.csv('covid.csv')
+```
+
+```{r}
+##Monthly covid case in California
+library(dplyr)
+covid_cal <- 
+  covid %>%
+  filter(Province_State == 'California')
+
+covid_cal <- data.frame(covid_cal)
+
+a <- data.frame(colSums(covid_cal[,12:829]))
+jan_20 <- sum(a[1:10,])
+feb_20 <- sum(a[11:39,])
+mar_20 <- sum(a[40:70,])
+apr_20 <- sum(a[71:100,])
+may_20 <- sum(a[101:131,])
+jun_20 <- sum(a[132:161,])
+jul_20 <- sum(a[162:192,])
+aug_20 <- sum(a[193:223,])
+sep_20 <- sum(a[224:253,])
+oct_20 <- sum(a[254:284,])
+nov_20 <- sum(a[285:314,])
+dec_20 <- sum(a[315:345,])
+jan_21 <- sum(a[346:376,])
+feb_21 <- sum(a[377:404,])
+mar_21 <- sum(a[405:435,])
+apr_21 <- sum(a[436:465,])
+may_21 <- sum(a[466:496,])
+jun_21 <- sum(a[497:526,])
+jul_21 <- sum(a[527:557,])
+aug_21 <- sum(a[558:588,])
+sep_21 <- sum(a[589:618,])
+oct_21 <- sum(a[619:649,])
+nov_21 <- sum(a[650:679,])
+dec_21 <- sum(a[680:710,])
+
+cal <- c(jan_20, jan_21, feb_20, feb_21, mar_20, mar_21, apr_20, apr_21, may_20, may_21, jun_20, jun_21,jul_20, jul_21, aug_20,aug_21,sep_20,sep_21,oct_20,oct_21,nov_20,nov_21,dec_20,dec_21)
+write.csv(cal,"/Users/oooliviaaa/Desktop/cal.csv", row.names = FALSE)
+
+##Monthly covid case in Florida
+covid_flo <- 
+  covid %>%
+  filter(Province_State == 'Florida')
+
+covid_flo <- data.frame(covid_flo)
+covid_flo
+
+b <- data.frame(colSums(covid_flo[,12:829]))
+jan_20 <- sum(b[1:10,])
+feb_20 <- sum(b[11:39,])
+mar_20 <- sum(b[40:70,])
+apr_20 <- sum(b[71:100,])
+may_20 <- sum(b[101:131,])
+jun_20 <- sum(b[132:161,])
+jul_20 <- sum(b[162:192,])
+aug_20 <- sum(b[193:223,])
+sep_20 <- sum(b[224:253,])
+oct_20 <- sum(b[254:284,])
+nov_20 <- sum(b[285:314,])
+dec_20 <- sum(b[315:345,])
+jan_21 <- sum(b[346:376,])
+feb_21 <- sum(b[377:404,])
+mar_21 <- sum(b[405:435,])
+apr_21 <- sum(b[436:465,])
+may_21 <- sum(b[466:496,])
+jun_21 <- sum(b[497:526,])
+jul_21 <- sum(b[527:557,])
+aug_21 <- sum(b[558:588,])
+sep_21 <- sum(b[589:618,])
+oct_21 <- sum(b[619:649,])
+nov_21 <- sum(b[650:679,])
+dec_21 <- sum(b[680:710,])
+
+flo <- c(jan_20, jan_21, feb_20, feb_21, mar_20, mar_21, apr_20, apr_21, may_20, may_21, jun_20, jun_21,jul_20, jul_21, aug_20,aug_21,sep_20,sep_21,oct_20,oct_21,nov_20,nov_21,dec_20,dec_21)
+write.csv(flo,"/Users/oooliviaaa/Desktop/flo.csv", row.names = FALSE)
+
+##Monthly covid case in Texas
+covid_tex <- 
+  covid %>%
+  filter(Province_State == 'Texas')
+
+covid_tex <- data.frame(covid_tex)
+covid_tex
+
+c <- data.frame(colSums(covid_tex[,12:829]))
+jan_20 <- sum(c[1:10,])
+feb_20 <- sum(c[11:39,])
+mar_20 <- sum(c[40:70,])
+apr_20 <- sum(c[71:100,])
+may_20 <- sum(c[101:131,])
+jun_20 <- sum(c[132:161,])
+jul_20 <- sum(c[162:192,])
+aug_20 <- sum(c[193:223,])
+sep_20 <- sum(c[224:253,])
+oct_20 <- sum(c[254:284,])
+nov_20 <- sum(c[285:314,])
+dec_20 <- sum(c[315:345,])
+jan_21 <- sum(c[346:376,])
+feb_21 <- sum(c[377:404,])
+mar_21 <- sum(c[405:435,])
+apr_21 <- sum(c[436:465,])
+may_21 <- sum(c[466:496,])
+jun_21 <- sum(c[497:526,])
+jul_21 <- sum(c[527:557,])
+aug_21 <- sum(c[558:588,])
+sep_21 <- sum(c[589:618,])
+oct_21 <- sum(c[619:649,])
+nov_21 <- sum(c[650:679,])
+dec_21 <- sum(c[680:710,])
+
+tex <- c(jan_20, jan_21, feb_20, feb_21, mar_20, mar_21, apr_20, apr_21, may_20, may_21, jun_20, jun_21,jul_20, jul_21, aug_20,aug_21,sep_20,sep_21,oct_20,oct_21,nov_20,nov_21,dec_20,dec_21)
+write.csv(tex,"/Users/oooliviaaa/Desktop/tex.csv", row.names = FALSE)
+
+##Monthly covid case in New York
+covid_ny <- 
+  covid %>%
+  filter(Province_State == 'New York')
+
+covid_ny <- data.frame(covid_ny)
+covid_ny
+
+d <- data.frame(colSums(covid_ny[,12:829]))
+jan_20 <- sum(d[1:10,])
+feb_20 <- sum(d[11:39,])
+mar_20 <- sum(d[40:70,])
+apr_20 <- sum(d[71:100,])
+may_20 <- sum(d[101:131,])
+jun_20 <- sum(d[132:161,])
+jul_20 <- sum(d[162:192,])
+aug_20 <- sum(d[193:223,])
+sep_20 <- sum(d[224:253,])
+oct_20 <- sum(d[254:284,])
+nov_20 <- sum(d[285:314,])
+dec_20 <- sum(d[315:345,])
+jan_21 <- sum(d[346:376,])
+feb_21 <- sum(d[377:404,])
+mar_21 <- sum(d[405:435,])
+apr_21 <- sum(d[436:465,])
+may_21 <- sum(d[466:496,])
+jun_21 <- sum(d[497:526,])
+jul_21 <- sum(d[527:557,])
+aug_21 <- sum(d[558:588,])
+sep_21 <- sum(d[589:618,])
+oct_21 <- sum(d[619:649,])
+nov_21 <- sum(d[650:679,])
+dec_21 <- sum(d[680:710,])
+
+ny <- c(jan_20, jan_21, feb_20, feb_21, mar_20, mar_21, apr_20, apr_21, may_20, may_21, jun_20, jun_21,jul_20, jul_21, aug_20,aug_21,sep_20,sep_21,oct_20,oct_21,nov_20,nov_21,dec_20,dec_21)
+write.csv(ny,"/Users/oooliviaaa/Desktop/ny.csv", row.names = FALSE)
+
+
+##Monthly US case
+case <- read.csv('covid.csv')
+a <- data.frame(colSums(case[,12:829]))
+jan_20 <- sum(a[1:10,])
+feb_20 <- sum(a[11:39,])
+mar_20 <- sum(a[40:70,])
+apr_20 <- sum(a[71:100,])
+may_20 <- sum(a[101:131,])
+jun_20 <- sum(a[132:161,])
+jul_20 <- sum(a[162:192,])
+aug_20 <- sum(a[193:223,])
+sep_20 <- sum(a[224:253,])
+oct_20 <- sum(a[254:284,])
+nov_20 <- sum(a[285:314,])
+dec_20 <- sum(a[315:345,])
+jan_21 <- sum(a[346:376,])
+feb_21 <- sum(a[377:404,])
+mar_21 <- sum(a[405:435,])
+apr_21 <- sum(a[436:465,])
+may_21 <- sum(a[466:496,])
+jun_21 <- sum(a[497:526,])
+jul_21 <- sum(a[527:557,])
+aug_21 <- sum(a[558:588,])
+sep_21 <- sum(a[589:618,])
+oct_21 <- sum(a[619:649,])
+nov_21 <- sum(a[650:679,])
+dec_21 <- sum(a[680:710,])
+
+c <- c(jan_20, jan_21, feb_20, feb_21, mar_20, mar_21, apr_20, apr_21, may_20, may_21, jun_20, jun_21,jul_20, jul_21, aug_20,aug_21,sep_20,sep_21,oct_20,oct_21,nov_20,nov_21,dec_20,dec_21)
+write.csv(c,"/Users/oooliviaaa/Desktop/c.csv", row.names = FALSE)
+
+data <- read.csv('final_data.csv')
+```
+
+Did not filter the case number and unemployment rate only in 2020 and 2021, which cause the p-value greater than 0.05
+```{r}
+##Primary_School
+model_ps <- lm(Primary_School~US_case, data)
+summary(model_ps)
+
+##High_School
+model_hs <- lm(High_School~US_case, data)
+summary(model_hs)
+
+##Associates_Degree
+model_ad <- lm(Associates_Degree~US_case, data)
+summary(model_ad)
+
+##Professional_Degree
+model_pd <- lm(Professional_Degree~US_case, data)
+summary(model_pd)
+
+##White
+model_w <- lm(White~US_case, data)
+summary(model_w)
+
+##Black
+model_b <- lm(Black~US_case, data)
+summary(model_b)
+
+##Asian
+model_a <- lm(Asian~US_case, data)
+summary(model_a)
+
+##Hispanic
+model_h <- lm(Hispanic~US_case, data)
+summary(model_h)
+
+##Men
+model_men <- lm(Men~US_case, data)
+summary(model_men)
+
+##Women
+model_women <- lm(Women~US_case, data)
+summary(model_women)
+
+##California
+model_cal <- lm(California~Cal_case, data)
+summary(model_cal)
+
+##Florida
+model_flo <- lm(Florida~Flo_case, data)
+summary(model_flo)
+
+##Texas
+model_tex <- lm(Texas~Tex_case, data)
+summary(model_tex)
+
+##New York
+model_ny <- lm(NY~NY_case, data)
+summary(model_ny)
+```
+
+

@@ -1,0 +1,568 @@
+---
+title: "5205 Group Project"
+author: "Group 8"
+output: html_notebook
+---
+
+We would like to understand whether covid is a factor makes the unemployment rate fluctuates during 2020 and 2021. First of all, we have to make sure the data is started from 2020, because the case number of covid boosted from 2020 March.
+```{r}
+data <- read.csv('final_data.csv')
+
+covid <- data[-c(1:10),] 
+covid <- covid[-c(3:12),] 
+covid <- covid[-c(5:14),] 
+covid <- covid[-c(7:16),] 
+covid <- covid[-c(9:18),] 
+covid <- covid[-c(11:20),] 
+covid <- covid[-c(13:22),] 
+covid <- covid[-c(15:24),] 
+covid <- covid[-c(17:26),] 
+covid <- covid[-c(19:28),]
+covid <- covid[-c(21:30),] 
+covid <- covid[-c(23:32),] 
+```
+
+
+Linear regression is used to test the relationship between covid case and unemployment rate. A p value smaller than 0.05 is considered as significant, which indicates a linear relationship between those two factors. 
+
+US case and educational level
+```{r}
+##Primary_School
+model_ps <- lm(Primary_School~US_case, covid)
+summary(model_ps)
+```
+
+```{r}
+##High_School
+model_hs <- lm(High_School~US_case, covid)
+summary(model_hs)
+```
+
+```{r}
+##Associates_Degree
+model_ad <- lm(Associates_Degree~US_case, covid)
+summary(model_ad)
+```
+
+```{r}
+##Professional_Degree
+model_pd <- lm(Professional_Degree~US_case, covid)
+summary(model_pd)
+```
+
+US case and race
+```{r}
+##White
+model_w <- lm(White~US_case, covid)
+summary(model_w)
+```
+
+```{r}
+##Black
+model_b <- lm(Black~US_case, covid)
+summary(model_b)
+```
+
+```{r}
+##Asian
+model_a <- lm(Asian~US_case, covid)
+summary(model_a)
+```
+
+```{r}
+##Hispanic
+model_h <- lm(Hispanic~US_case, covid)
+summary(model_h)
+```
+
+US case and gender
+```{r}
+##Men
+model_men <- lm(Men~US_case, covid)
+summary(model_men)
+```
+
+```{r}
+##Women
+model_women <- lm(Women~US_case, covid)
+summary(model_women)
+```
+All of the p values are less than 0.05. Therefore, we can conclude that covid does influence US unemployment rate of different people.
+
+To make further interpretation, we select the top 4 populous states in the US to test the influence of covid on unemployment rate by linear regression.
+
+```{r}
+##California
+model_cal <- lm(California~Cal_case, covid)
+summary(model_cal)
+```
+
+```{r}
+##Florida
+model_flo <- lm(Florida~Flo_case, covid)
+summary(model_flo)
+```
+
+```{r}
+##Texas
+model_tex <- lm(Texas~Tex_case, covid)
+summary(model_tex)
+```
+
+```{r}
+##New York
+model_ny <- lm(NY~NY_case, covid)
+summary(model_ny)
+```
+Similarly, covid does impact on individual state's unemployment rate, especially Florida.
+
+
+
+```{r}
+unemp <- read.csv('final_data.csv')
+str(unemp)
+head(unemp,10)
+names(unemp)
+plot(unemp[2:12,3])
+hist(unemp$Primary_School)
+hist(unemp$High_School)
+```
+Here I imported the data and I have found that the original data set put all the Januaries together, Febuaries together, etc, not the way I wanted. So I regrouped the data, making it in rank of years.
+
+
+
+```{r}
+library('ggplot2')
+library('forecast')
+library('tseries')
+```
+
+
+
+REGROUP CODE: 
+```{r}
+unemp10<-unemp[unemp$Year=="2010",]
+unemp11<-unemp[unemp$Year=="2011",]
+unemp12<-unemp[unemp$Year=="2012",]
+unemp13<-unemp[unemp$Year=="2013",]
+unemp14<-unemp[unemp$Year=="2014",]
+unemp15<-unemp[unemp$Year=="2015",]
+unemp16<-unemp[unemp$Year=="2016",]
+unemp17<-unemp[unemp$Year=="2017",]
+unemp18<-unemp[unemp$Year=="2018",]
+unemp19<-unemp[unemp$Year=="2019",]
+unemp20<-unemp[unemp$Year=="2020",]
+unemp21<-unemp[unemp$Year=="2021",]
+unempall.1 <- rbind(unemp10, unemp11)
+unempall.2<- rbind(unempall.1, unemp12)
+unempall.3<- rbind(unempall.2, unemp13)
+unempall.4<- rbind(unempall.3, unemp14)
+unempall.5<- rbind(unempall.4, unemp15)
+unempall.6<- rbind(unempall.5, unemp16)
+unempall.7<- rbind(unempall.6, unemp17)
+unempall.8<- rbind(unempall.7, unemp18)
+unempall.9<- rbind(unempall.8, unemp19)
+unempall.10<- rbind(unempall.9, unemp20)
+unempall<- rbind(unempall.10, unemp21)
+```
+
+
+Split the data into train and test
+（we delete two months from test group due to length match in later accuracy function）
+```{r}
+train = unempall.10
+test = unemp21[-c(11,12),]
+
+train
+test
+```
+
+
+
+The first graph is grouped by races
+```{r}
+unempall
+plot(unempall$White, type='l', xaxt='n',ylim=c(0,28), ylab= "unemployment rate")
+legend(75, 28, legend=c("White", "Asian", "Hispanic", "Black"),
+       col=c("black", "red", "blue", "pink"), lty=1:2, cex=0.8)
+axis(1, labels=2010:2022, at=(0:12)*12+1)
+points(unempall$Asian,type='l', xaxt='n', col = "red")
+points(unempall$Hispanic,type='l', xaxt='n', col = "blue")
+points(unempall$Black,type='l', xaxt='n', col = "pink")
+```
+
+
+
+The second graph is grouped by academic background
+```{r}
+plot(unempall$Primary_School, type='l', xaxt='n',ylim=c(0,28), ylab= "unemployment rate")
+legend(55, 28, legend=c("Primary_School", "Highschool", "Associate_Degree", "Professional_Degree"),
+       col=c("black", "red", "blue", "pink"), lty=1:2, cex=0.8)
+axis(1, labels=2010:2022, at=(0:12)*12+1)
+points(unempall$High_School,type='l', xaxt='n', col = "red")
+points(unempall$Associates_Degree,type='l', xaxt='n', col = "blue")
+points(unempall$Professional_Degree,type='l', xaxt='n', col = "pink")
+```
+
+
+
+The third graph is grouped by genders
+```{r}
+plot(unempall$Men, type='l', xaxt='n',ylim=c(0,20), ylab= "unemployment rate")
+legend(80, 20, legend=c("Men", "Women"),
+       col=c("black", "red"), lty=1:2, cex=0.8)
+axis(1, labels=2010:2022, at=(0:12)*12+1)
+points(unempall$Women,type='l', xaxt='n', col = "red")
+```
+
+The fourth graph is grouped by states.
+```{r}
+plot(unempall$California, type='l', xaxt='n',ylim=c(0,20), ylab= "unemployment rate")
+legend(80, 20, legend=c("California", "Florida", "New_York", "Texas"),
+       col=c("black", "red", "blue", "pink"), lty=1:2, cex=0.8)
+axis(1, labels=2010:2022, at=(0:12)*12+1)
+points(unempall$Florida,type='l', xaxt='n', col = "red")
+points(unempall$New_York,type='l', xaxt='n', col = "blue")
+points(unempall$Texas,type='l', xaxt='n', col = "pink")
+```
+
+
+This is the arima for Primary school.
+```{r}
+tsallp <- ts(data=train$Primary_School)
+autoarimatsallp <- auto.arima(tsallp,stepwise = F,approximation = F)
+forecasttsallp <- forecast(autoarimatsallp)
+forecasttsallp$residuals
+```
+
+```{r}
+plot(forecasttsallp)
+```
+
+```{r}
+summary(autoarimatsallp)
+```
+
+```{r}
+length(forecasttsallp)
+tsallp_test = test$Primary_School
+accuracy(forecasttsallp,tsallp_test)
+```
+
+
+
+
+This is the arima for High school.
+```{r}
+tsallh <- ts(data=train$High_School)
+autoarimatsallh <- auto.arima(tsallh)
+forecasttsallh <- forecast(autoarimatsallh)
+forecasttsallh$residuals
+```
+
+
+```{r}
+plot(forecasttsallh)
+```
+
+```{r}
+summary(autoarimatsallh)
+```
+
+```{r}
+tsallh_test = test$High_School
+tsallh_test
+accuracy(forecasttsallh,tsallh_test)
+```
+
+
+
+
+This is the arima for Associate degree.
+```{r}
+tsallASS <- ts(data=train$Associates_Degree)
+autoarimatsallASS <- auto.arima(tsallASS)
+forecasttsallASS <- forecast(autoarimatsallASS)
+forecasttsallASS$residuals
+```
+
+
+```{r}
+plot(forecasttsallASS)
+```
+
+
+```{r}
+summary(autoarimatsallASS)
+```
+
+```{r}
+tsallass_test = test$Associates_Degree
+tsallass_test
+accuracy(forecasttsallASS,tsallass_test)
+```
+
+
+
+This is the arima for Professional Degree. 
+```{r}
+tsallPro <- ts(data=train$Professional_Degree)
+autoarimatsallPro <- auto.arima(tsallPro)
+forecasttsallPro <- forecast(autoarimatsallPro)
+forecasttsallPro$residuals
+```
+
+```{r}
+plot(forecasttsallPro)
+```
+
+
+```{r}
+summary(autoarimatsallPro)
+```
+```{r}
+tsallpro_test = test$Professional_Degree
+tsallpro_test
+accuracy(forecasttsallPro,tsallpro_test)
+```
+
+
+
+This is the arima for White people.
+```{r}
+tsallw <- ts(data=train$White)
+autoarimatsallw <- auto.arima(tsallw)
+forecasttsallw <- forecast(autoarimatsallw)
+forecasttsallw$residuals
+```
+
+```{r}
+plot(forecasttsallw)
+```
+
+```{r}
+summary(autoarimatsallw)
+```
+
+```{r}
+tsallw_test = test$White
+tsallw_test
+accuracy(forecasttsallw,tsallw_test)
+```
+
+
+
+This is the arima for Asian.
+```{r}
+tsallA <- ts(data=train$Asian)
+autoarimatsallA <- auto.arima(tsallA)
+forecasttsallA <- forecast(autoarimatsallA)
+forecasttsallA$residuals
+```
+
+
+```{r}
+plot(forecasttsallA)
+```
+
+```{r}
+summary(autoarimatsallA)
+```
+```{r}
+tsalla_test = test$Asian
+tsalla_test
+accuracy(forecasttsallA,tsalla_test)
+```
+
+
+
+
+This is arima for Black people. 
+```{r}
+tsallB <- ts(data=train$Black)
+autoarimatsallB <- auto.arima(tsallB)
+forecasttsallB <- forecast(autoarimatsallB)
+forecasttsallB$residuals
+```
+
+```{r}
+plot(forecasttsallB)
+```
+
+```{r}
+summary(autoarimatsallB)
+```
+```{r}
+tsallb_test = test$Black
+tsallb_test
+accuracy(forecasttsallB,tsallb_test)
+```
+
+
+
+This is arima for Hispanic.
+```{r}
+tsallH <- ts(data=train$Hispanic)
+autoarimatsallH <- auto.arima(tsallH)
+forecasttsallH <- forecast(autoarimatsallH)
+forecasttsallH$residuals
+```
+
+```{r}
+plot(forecasttsallH)
+```
+
+```{r}
+summary(autoarimatsallH)
+```
+```{r}
+tsallh_test = test$Hispanic
+tsallh_test
+accuracy(forecasttsallH,tsallh_test)
+```
+
+
+
+
+This is arima for Men.
+```{r}
+tsallM <- ts(data=train$Men)
+autoarimatsallM <- auto.arima(tsallM)
+forecasttsallM <- forecast(autoarimatsallM)
+forecasttsallM$residuals
+```
+
+```{r}
+plot(forecasttsallM)
+```
+
+```{r}
+summary(autoarimatsallM)
+```
+```{r}
+tsallm_test = test$Men
+tsallm_test
+accuracy(forecasttsallM,tsallm_test)
+```
+
+
+
+
+This is arima for Women. 
+```{r}
+tsallwo <- ts(data=train$Women)
+autoarimatsallwo <- auto.arima(tsallwo)
+forecasttsallwo <- forecast(autoarimatsallwo)
+forecasttsallwo$residuals
+```
+
+```{r}
+plot(forecasttsallwo)
+```
+
+```{r}
+summary(autoarimatsallwo)
+```
+```{r}
+tsallwo_test = test$Women
+tsallwo_test
+accuracy(forecasttsallwo,tsallwo_test)
+```
+
+
+
+
+This is arima for CA. 
+```{r}
+tsallCA <- ts(data=train$California)
+autoarimatsallCA <- auto.arima(tsallCA)
+forecasttsallCA <- forecast(autoarimatsallCA)
+forecasttsallCA$residuals
+```
+
+```{r}
+plot(forecasttsallCA)
+```
+
+```{r}
+summary(autoarimatsallCA)
+```
+```{r}
+tsallCA_test = test$California
+tsallCA_test
+accuracy(forecasttsallCA,tsallCA_test)
+```
+
+
+
+This is arima for Florida. 
+```{r}
+tsallF <- ts(data=train$Florida)
+autoarimatsallF <- auto.arima(tsallF)
+forecasttsallF <- forecast(autoarimatsallF)
+forecasttsallF$residuals
+```
+
+```{r}
+plot(forecasttsallF)
+```
+
+```{r}
+summary(autoarimatsallF)
+```
+```{r}
+tsallFL_test = test$Florida
+tsallFL_test
+accuracy(forecasttsallF,tsallFL_test)
+```
+
+
+
+This is arima for Texas. 
+```{r}
+tsallT <- ts(data=train$Texas)
+autoarimatsallT <- auto.arima(tsallT)
+forecasttsallT <- forecast(autoarimatsallT)
+forecasttsallT$residuals
+```
+
+```{r}
+plot(forecasttsallT)
+```
+
+```{r}
+summary(autoarimatsallT)
+```
+```{r}
+tsallTX_test = test$Texas
+tsallTX_test
+accuracy(forecasttsallT,tsallTX_test)
+```
+
+
+
+This is arima for New York. 
+```{r}
+tsallNY <- ts(data=train$NY)
+autoarimatsallNY <- auto.arima(tsallNY)
+forecasttsallNY <- forecast(autoarimatsallNY)
+forecasttsallNY$residuals
+```
+
+```{r}
+plot(forecasttsallNY)
+```
+
+```{r}
+summary(autoarimatsallwo)
+```
+
+```{r}
+tsallNY_test = test$NY
+tsallNY_test
+accuracy(forecasttsallNY,tsallNY_test)
+```
+
+
+
+
